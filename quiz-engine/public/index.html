@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizEngine — Automated Quiz & Certification Platform</title>
+  <meta name="description"
+    content="Test your knowledge, earn certified credentials and downloadable PDF certificates with our AI-powered quiz platform." />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    /* ---- HERO ---- */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 100px 0 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-content {
+      max-width: 600px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 122, 89, 0.15);
+      border: 1px solid rgba(255, 122, 89, 0.3);
+      border-radius: 50px;
+      padding: 6px 16px;
+      font-size: 0.82rem;
+      color: #ff9a7e;
+      font-weight: 500;
+      margin-bottom: 24px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .hero-badge span {
+      width: 8px;
+      height: 8px;
+      background: #ff9a7e;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(1.5);
+      }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 24px;
+      animation: fadeIn 0.6s 0.1s ease both;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 36px;
+      animation: fadeIn 0.6s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      animation: fadeIn 0.6s 0.3s ease both;
+    }
+
+    /* ---- HERO GRAPHIC ---- */
+    .hero-graphic {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 45%;
+      max-width: 500px;
+      opacity: 0.8;
+    }
+
+    .hero-card-float {
+      background: #FFFFFF;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(255, 122, 89, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
+      animation: floatCard 4s ease-in-out infinite;
+    }
+
+    @keyframes floatCard {
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    .quiz-preview-q {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .quiz-preview-opt {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .quiz-preview-opt.selected {
+      background: rgba(255, 122, 89, 0.15);
+      border-color: var(--primary);
+      color: var(--text-primary);
+    }
+
+    .quiz-preview-opt .opt-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quiz-preview-opt.selected .opt-dot {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .quiz-preview-opt.selected .opt-dot::after {
+      content: '';
+      width: 7px;
+      height: 7px;
+      background: #fff;
+      border-radius: 50%;
+    }
+
+
+    .preview-timer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .timer-badge {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    /* ---- FEATURES ---- */
+    .features {
+      padding: 80px 0;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .feature-card {
+      padding: 32px 28px;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-6px);
+    }
+
+    .feature-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+
+    .feature-icon.indigo {
+      background: rgba(255, 122, 89, 0.2);
+    }
+
+    .feature-icon.purple {
+      background: rgba(244, 114, 182, 0.2);
+    }
+
+    .feature-icon.cyan {
+      background: rgba(250, 204, 21, 0.15);
+    }
+
+    .feature-icon.green {
+      background: rgba(16, 185, 129, 0.2);
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    /* ---- STATS ---- */
+    .stats {
+      padding: 60px 0;
+      border-top: 1px solid var(--glass-border);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 32px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    /* ---- CTA ---- */
+    .cta-section {
+      padding: 80px 0;
+      text-align: center;
+    }
+
+    .cta-card {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 60px 48px;
+    }
+
+    .cta-card h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .cta-card p {
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+
+    /* ---- FOOTER ---- */
+    footer {
+      padding: 32px 0;
+      border-top: 1px solid var(--glass-border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="/" class="navbar-brand">
+      <div class="navbar-logo">🎯</div>
+      <span class="navbar-title">QuizEngine</span>
+    </a>
+    <ul class="navbar-nav" id="navLinks">
+      <li><a href="/#features">Features</a></li>
+      <li><a href="/quiz" id="startQuizNav" style="display:none">Take Quiz</a></li>
+      <li><a href="/admin" id="adminNav" style="display:none">Admin</a></li>
+      <li><a href="/login" class="btn btn-secondary" id="loginBtn" style="padding:8px 20px">Login</a></li>
+      <li>
+        <a href="#" class="btn btn-primary" id="logoutBtn" style="display:none;padding:8px 20px"
+          onclick="handleLogout()">Logout</a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="page-wrapper">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container"
+        style="display:flex; align-items:center; justify-content:space-between; gap:40px; flex-wrap:wrap;">
+
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span></span>
+            Live Platform — Ready to Test
+          </div>
+
+          <h1>
+            Master Skills, <br />
+            <span class="gradient-text">Earn Certified</span><br />
+            Credentials
+          </h1>
+
+          <p>
+            Take interactive multiple-choice quizzes, track your progress in real time,
+            and receive a beautifully designed PDF certificate — automatically generated
+            when you score 60% or higher.
+          </p>
+
+          <div class="hero-actions">
+            <a href="/register" class="btn btn-primary" style="font-size:1rem; padding:14px 32px;">
+              🚀 Get Started Free
+            </a>
+            <a href="/login" class="btn btn-secondary" style="font-size:1rem; padding:14px 32px;">
+              Sign In
+            </a>
+          </div>
+        </div>
+
+        <!-- Floating Quiz Card Preview -->
+        <div class="hero-graphic">
+          <div class="hero-card-float">
+            <div class="preview-timer">
+              <span>Question 3 of 10</span>
+              <span class="timer-badge">⏱ 08:42</span>
+            </div>
+            <div class="quiz-preview-q">
+              Which HTTP method is used to send data to a server?
+            </div>
+            <div class="quiz-preview-opt">
+              <div class="opt-dot"></div> GET
+            </div>
+            <div class="quiz-preview-opt">
+              <div class="opt-dot"></div> PUT
+            </div>
+            <div class="quiz-preview-opt selected">
+              <div class="opt-dot"></div> POST ✓
+            </div>
+            <div class="quiz-preview-opt">
+              <div class="opt-dot"></div> DELETE
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats">
+      <div class="container">
+        <div class="stats-grid">
+          <div class="fade-in">
+            <div class="stat-number">10+</div>
+            <div class="stat-label">Quiz Questions</div>
+          </div>
+          <div class="fade-in fade-in-delay-1">
+            <div class="stat-number">60%</div>
+            <div class="stat-label">Passing Score</div>
+          </div>
+          <div class="fade-in fade-in-delay-2">
+            <div class="stat-number">PDF</div>
+            <div class="stat-label">Auto Certificate</div>
+          </div>
+          <div class="fade-in fade-in-delay-3">
+            <div class="stat-number">10m</div>
+            <div class="stat-label">Timer Per Quiz</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features" id="features">
+      <div class="container">
+        <div style="text-align:center;">
+          <h2 class="section-title gradient-text">Why QuizEngine?</h2>
+          <p class="section-subtitle">Everything you need for a complete certification experience</p>
+        </div>
+        <div class="features-grid">
+
+          <div class="glass-card feature-card fade-in">
+            <div class="feature-icon indigo">📝</div>
+            <h3>Dynamic MCQ Quiz</h3>
+            <p>Randomized multiple-choice questions pulled from a live MySQL database — no two attempts are the same.
+            </p>
+          </div>
+
+          <div class="glass-card feature-card fade-in fade-in-delay-1">
+            <div class="feature-icon purple">⏱</div>
+            <h3>Countdown Timer</h3>
+            <p>A real-time animated progress-bar timer automatically submits your quiz when the time is up.</p>
+          </div>
+
+          <div class="glass-card feature-card fade-in fade-in-delay-2">
+            <div class="feature-icon cyan">📜</div>
+            <h3>PDF Certificate</h3>
+            <p>Score ≥ 60% and instantly download a professionally designed PDF certificate with a unique ID.</p>
+          </div>
+
+          <div class="glass-card feature-card fade-in fade-in-delay-3">
+            <div class="feature-icon green">🛡</div>
+            <h3>Secure & Private</h3>
+            <p>Bcrypt-hashed passwords, session-based auth, and parameterized SQL queries keep your data safe.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+      <div class="container">
+        <div class="glass-card cta-card">
+          <h2>Ready to Take the Challenge?</h2>
+          <p>Create a free account in seconds and put your knowledge to the test right now.</p>
+          <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+            <a href="/register" class="btn btn-primary" style="font-size:1rem; padding:14px 36px;">
+              Create Account
+            </a>
+            <a href="/login" class="btn btn-secondary" style="font-size:1rem; padding:14px 36px;">
+              Login
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="container">
+        <p>© 2024 <strong>QuizEngine</strong> — Built with Node.js, Express & MySQL</p>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="/js/script.js"></script>
+  <script>
+    // Check session and update navbar
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('loginBtn').style.display = 'none';
+          document.getElementById('logoutBtn').style.display = 'inline-flex';
+          document.getElementById('startQuizNav').style.display = 'inline';
+          if (data.user.role === 'admin') {
+            document.getElementById('adminNav').style.display = 'inline';
+          }
+        }
+      } catch (e) { }
+    })();
+
+    async function handleLogout() {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.reload();
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard — QuizEngine</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+        body {
+            overflow-x: hidden;
+        }
+
+        /* ---- LAYOUT ---- */
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+            padding-top: 70px;
+        }
+
+        /* ---- SIDEBAR ---- */
+        .sidebar {
+            width: 240px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            padding: 32px 16px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 70px;
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            padding: 6px 12px;
+            margin-bottom: 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+            margin-bottom: 4px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(255, 122, 89, 0.08), rgba(244, 114, 182, 0.05));
+            color: var(--text-primary);
+            border-left: 3px solid var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            min-width: 20px;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 24px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        /* ---- MAIN CONTENT ---- */
+        .main-content {
+            margin-left: 240px;
+            flex: 1;
+            padding: 32px 28px;
+        }
+
+        /* ---- STAT CARDS ---- */
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            padding: 24px 22px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .stat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue {
+            background: rgba(255, 122, 89, 0.08);
+        }
+
+        .stat-icon.purple {
+            background: rgba(244, 114, 182, 0.08);
+        }
+
+        .stat-icon.green {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .stat-icon.cyan {
+            background: rgba(250, 204, 21, 0.08);
+        }
+
+        .stat-info .num {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .stat-info .lbl {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* ---- SECTION PANEL ---- */
+        .panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        /* ---- QUESTION FORM ---- */
+        .question-form {
+            padding: 28px;
+            margin-bottom: 28px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-grid .full {
+            grid-column: 1 / -1;
+        }
+
+        /* ---- TABLE WRAPPER ---- */
+        .table-wrapper {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        /* ---- EDIT MODAL ---- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 9000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-box {
+            width: 100%;
+            max-width: 600px;
+            padding: 36px;
+            background: #FFFFFF;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all var(--transition);
+        }
+
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--text-primary);
+        }
+
+        /* ---- RESPONSIVE ---- */
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 60px;
+                padding: 24px 8px;
+            }
+
+            .nav-item span,
+            .nav-item .nav-label,
+            .sidebar-label,
+            .sidebar-footer {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 60px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px 16px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <div class="navbar-logo">🎯</div>
+            <span class="navbar-title">QuizEngine</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><span class="badge badge-admin">Admin</span></li>
+            <li id="adminName" style="color:var(--text-secondary); font-size:0.9rem;"></li>
+            <li><a href="#" class="btn btn-secondary" style="padding:8px 20px" onclick="handleLogout()">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="dashboard-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-label">Navigation</div>
+            <button class="nav-item active" onclick="switchPanel('dashboard')">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </button>
+            <button class="nav-item" onclick="switchPanel('questions')">
+                <span class="nav-icon">❓</span>
+                <span class="nav-label">Questions</span>
+            </button>
+            <button class="nav-item" onclick="switchPanel('users')">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Users</span>
+            </button>
+            <button class="nav-item" onclick="switchPanel('attempts')">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Attempts</span>
+            </button>
+
+            <div class="sidebar-footer">
+                <button class="nav-item" onclick="handleLogout()">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-label">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <!-- ===== DASHBOARD PANEL ===== -->
+            <div class="panel active" id="panel-dashboard">
+                <div class="panel-header">
+                    <div>
+                        <h1 class="section-title" style="font-size:1.5rem;">Dashboard Overview</h1>
+                        <p class="section-subtitle" style="margin-bottom:0;">Welcome back, Admin!</p>
+                    </div>
+                    <span id="dashDate" style="color:var(--text-muted); font-size:0.85rem;"></span>
+                </div>
+
+                <div class="stat-cards">
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon blue">👥</div>
+                        <div class="stat-info">
+                            <div class="num" id="statUsers">—</div>
+                            <div class="lbl">Total Users</div>
+                        </div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon purple">❓</div>
+                        <div class="stat-info">
+                            <div class="num" id="statQuestions">—</div>
+                            <div class="lbl">Questions</div>
+                        </div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon cyan">📋</div>
+                        <div class="stat-info">
+                            <div class="num" id="statAttempts">—</div>
+                            <div class="lbl">Quiz Attempts</div>
+                        </div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon green">🏅</div>
+                        <div class="stat-info">
+                            <div class="num" id="statCerts">—</div>
+                            <div class="lbl">Certificates</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card" style="padding:28px;">
+                    <h3 style="margin-bottom:8px; font-size:1rem;">Quick Actions</h3>
+                    <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:20px;">Use the sidebar to
+                        manage questions, view users and quiz attempts.</p>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <button class="btn btn-primary btn-sm" onclick="switchPanel('questions')">➕ Add
+                            Question</button>
+                        <button class="btn btn-secondary btn-sm" onclick="switchPanel('users')">👥 View Users</button>
+                        <button class="btn btn-secondary btn-sm" onclick="switchPanel('attempts')">📋 View
+                            Attempts</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== QUESTIONS PANEL ===== -->
+            <div class="panel" id="panel-questions">
+                <div class="panel-header">
+                    <div>
+                        <h1 class="section-title" style="font-size:1.5rem;">Manage Questions</h1>
+                        <p class="section-subtitle" style="margin-bottom:0;">Add, edit, or delete quiz questions</p>
+                    </div>
+                </div>
+
+                <!-- Add Question Form -->
+                <div class="glass-card question-form" id="addQuestionForm">
+                    <h3 style="margin-bottom:20px; font-size:1rem; font-weight:600;">➕ Add New Question</h3>
+                    <form onsubmit="addQuestion(event)">
+                        <div class="form-group full">
+                            <label>Question</label>
+                            <textarea id="qQuestion" placeholder="Enter the question..." required rows="2"></textarea>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Option A</label>
+                                <input type="text" id="qOptA" placeholder="Option A" required />
+                            </div>
+                            <div class="form-group">
+                                <label>Option B</label>
+                                <input type="text" id="qOptB" placeholder="Option B" required />
+                            </div>
+                            <div class="form-group">
+                                <label>Option C</label>
+                                <input type="text" id="qOptC" placeholder="Option C" required />
+                            </div>
+                            <div class="form-group">
+                                <label>Option D</label>
+                                <input type="text" id="qOptD" placeholder="Option D" required />
+                            </div>
+                            <div class="form-group">
+                                <label>Correct Option</label>
+                                <select id="qCorrect" required>
+                                    <option value="">Select correct answer</option>
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">Add Question</button>
+                    </form>
+                </div>
+
+                <!-- Questions Table -->
+                <div class="glass-card table-wrapper">
+                    <div class="table-scroll">
+                        <table class="styled-table" id="questionsTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Question</th>
+                                    <th>A</th>
+                                    <th>B</th>
+                                    <th>C</th>
+                                    <th>D</th>
+                                    <th>Answer</th>
+                                    <th style="text-align:center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="questionsTbody">
+                                <tr>
+                                    <td colspan="8" style="text-align:center; color:var(--text-muted); padding:32px;">
+                                        Loading questions...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== USERS PANEL ===== -->
+            <div class="panel" id="panel-users">
+                <div class="panel-header">
+                    <div>
+                        <h1 class="section-title" style="font-size:1.5rem;">Registered Users</h1>
+                        <p class="section-subtitle" style="margin-bottom:0;">All user accounts</p>
+                    </div>
+                </div>
+                <div class="glass-card table-wrapper">
+                    <div class="table-scroll">
+                        <table class="styled-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTbody">
+                                <tr>
+                                    <td colspan="5" style="text-align:center; color:var(--text-muted); padding:32px;">
+                                        Loading users...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ATTEMPTS PANEL ===== -->
+            <div class="panel" id="panel-attempts">
+                <div class="panel-header">
+                    <div>
+                        <h1 class="section-title" style="font-size:1.5rem;">Quiz Attempts</h1>
+                        <p class="section-subtitle" style="margin-bottom:0;">All submitted quiz results</p>
+                    </div>
+                </div>
+                <div class="glass-card table-wrapper">
+                    <div class="table-scroll">
+                        <table class="styled-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Score</th>
+                                    <th>%</th>
+                                    <th>Certificate</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attemptsTbody">
+                                <tr>
+                                    <td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;">
+                                        Loading attempts...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div class="modal-overlay" id="editModal" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>✏️ Edit Question</h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <form onsubmit="saveEdit(event)">
+                <input type="hidden" id="editId" />
+                <div class="form-group">
+                    <label>Question</label>
+                    <textarea id="editQuestion" required rows="2"></textarea>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Option A</label>
+                        <input type="text" id="editA" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Option B</label>
+                        <input type="text" id="editB" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Option C</label>
+                        <input type="text" id="editC" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Option D</label>
+                        <input type="text" id="editD" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Correct Option</label>
+                        <select id="editCorrect" required>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/script.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+
+</html>

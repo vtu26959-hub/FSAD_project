@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Host a Quiz — QuizEngine</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+        .host-page {
+            min-height: 100vh;
+            padding: 100px 0 60px;
+        }
+
+        /* ---- STEPS ---- */
+        .steps-header {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 36px;
+            overflow-x: auto;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .step-num {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.03);
+            border: 2px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            transition: all var(--transition);
+        }
+
+        .step-item.active .step-num {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-color: transparent;
+        }
+
+        .step-item.done .step-num {
+            background: var(--success);
+            border-color: transparent;
+        }
+
+        .step-label {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .step-item.active .step-label {
+            color: var(--text-primary);
+        }
+
+        .step-item.done .step-label {
+            color: var(--success);
+        }
+
+        .step-divider {
+            flex: 1;
+            min-width: 24px;
+            height: 2px;
+            background: var(--glass-border);
+            margin: 0 10px;
+        }
+
+        /* ---- PANELS ---- */
+        .host-panel {
+            display: none;
+        }
+
+        .host-panel.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .host-card {
+            max-width: 680px;
+            padding: 36px;
+        }
+
+        /* ---- QUESTION LIST ---- */
+        .question-list {
+            margin-top: 20px;
+        }
+
+        .q-item {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--glass-border);
+            margin-bottom: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .q-item-text {
+            font-size: 0.9rem;
+        }
+
+        .q-item-answer {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ---- JOIN CODE DISPLAY ---- */
+        .join-code-box {
+            text-align: center;
+            padding: 48px 32px;
+        }
+
+        .join-code-big {
+            font-family: monospace;
+            font-size: 4rem;
+            font-weight: 900;
+            letter-spacing: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .join-code-hint {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 28px;
+        }
+
+        /* ---- PARTICIPANT ROW ---- */
+        .participant-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .participant-row:last-child {
+            border-bottom: none;
+        }
+
+        .participant-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            color: #fff;
+        }
+
+        .participant-info .name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .participant-info .sub {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <div class="navbar-logo">🎯</div>
+            <span class="navbar-title">QuizEngine</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="/dashboard" class="btn btn-secondary" style="padding:8px 20px">← Dashboard</a></li>
+        </ul>
+    </nav>
+
+    <div class="host-page">
+        <div class="container">
+
+            <div class="welcome-header fade-in">
+                <h1 class="section-title">🎙 Host a Quiz Session</h1>
+                <p class="section-subtitle" style="margin-bottom:20px;">Create your quiz, add questions, then launch.
+                </p>
+            </div>
+
+            <!-- STEP INDICATOR -->
+            <div class="steps-header fade-in" id="stepsHeader">
+                <div class="step-item active" id="step1-item">
+                    <div class="step-num">1</div>
+                    <span class="step-label">Create Quiz</span>
+                </div>
+                <div class="step-divider"></div>
+                <div class="step-item" id="step2-item">
+                    <div class="step-num">2</div>
+                    <span class="step-label">Add Questions</span>
+                </div>
+                <div class="step-divider"></div>
+                <div class="step-item" id="step3-item">
+                    <div class="step-num">3</div>
+                    <span class="step-label">Launch Session</span>
+                </div>
+            </div>
+
+            <!-- STEP 1: CREATE QUIZ -->
+            <div class="host-panel active" id="panel-step1">
+                <div class="glass-card host-card">
+                    <h3 style="margin-bottom:6px; font-size:1.05rem; font-weight:700;">📋 Quiz Details</h3>
+                    <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:24px;">Give your quiz a
+                        title and optional description.</p>
+                    <form onsubmit="createQuiz(event)">
+                        <div class="form-group">
+                            <label>Quiz Title *</label>
+                            <input type="text" id="quizTitle" placeholder="e.g. JavaScript Fundamentals Quiz" required
+                                maxlength="200" />
+                        </div>
+                        <div class="form-group">
+                            <label>Description (optional)</label>
+                            <textarea id="quizDesc" placeholder="What is this quiz about?" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="createQuizBtn">Create Quiz →</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- STEP 2: ADD QUESTIONS -->
+            <div class="host-panel" id="panel-step2">
+                <div class="glass-card host-card">
+                    <h3 style="margin-bottom:6px; font-size:1.05rem; font-weight:700;">❓ Add Questions</h3>
+                    <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:24px;">Add at least 1
+                        question before hosting.</p>
+                    <form onsubmit="addQuestion(event)">
+                        <div class="form-group">
+                            <label>Question *</label>
+                            <textarea id="qText" placeholder="Enter your question..." required rows="2"></textarea>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Option A *</label>
+                                <input type="text" id="qA" placeholder="Option A" required />
+                            </div>
+                            <div class="form-group">
+                                <label>Option B *</label>
+                                <input type="text" id="qB" placeholder="Option B" required />
+                            </div>
+                            <div class="form-group">
+                                <label>Option C *</label>
+                                <input type="text" id="qC" placeholder="Option C" required />
+                            </div>
+                            <div class="form-group">
+                                <label>Option D *</label>
+                                <input type="text" id="qD" placeholder="Option D" required />
+                            </div>
+                            <div class="form-group">
+                                <label>Correct Answer *</label>
+                                <select id="qCorrect" required>
+                                    <option value="">Select answer</option>
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm" id="addQBtn">+ Add Question</button>
+                    </form>
+
+                    <!-- Added questions list -->
+                    <div class="question-list" id="questionList"></div>
+
+                    <div style="display:flex; gap:12px; margin-top:24px; flex-wrap:wrap;">
+                        <button class="btn btn-secondary" onclick="goStep(1)">← Back</button>
+                        <button class="btn btn-success" id="hostBtn" onclick="hostSession()" disabled>🚀 Host This
+                            Quiz</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: SESSION LIVE -->
+            <div class="host-panel" id="panel-step3">
+                <div class="glass-card join-code-box host-card" style="max-width:600px;">
+                    <div style="margin-bottom:8px; color:var(--text-secondary); font-size:0.9rem;">Your Join Code</div>
+                    <div class="join-code-big" id="liveCode">——————</div>
+                    <div class="join-code-hint">Share this code with participants</div>
+                    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:32px;">
+                        <button class="btn btn-primary" onclick="copyCode()">📋 Copy Code</button>
+                        <button class="btn btn-danger btn-sm" onclick="endSession()">⬛ End Session</button>
+                    </div>
+                    <div style="text-align:left;">
+                        <div
+                            style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                            <strong style="font-size:0.95rem;">👥 Participants (<span id="partCount">0</span>)</strong>
+                            <button class="btn btn-secondary btn-sm" onclick="loadParticipants()">↻ Refresh</button>
+                        </div>
+                        <div class="glass-card" style="padding:0; overflow:hidden;" id="participantList">
+                            <div class="empty-state" style="padding:24px;">Waiting for participants to join...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/js/script.js"></script>
+    <script>
+        let currentQuizId = null;
+        let currentCode = null;
+        let questionCount = 0;
+        let pollInterval = null;
+
+        // Auth check + handle ?edit= or ?code= params
+        (async () => {
+            const res = await fetch('/api/auth/session');
+            const data = await res.json();
+            if (!data.success) { window.location.href = '/login'; return; }
+
+            const params = new URLSearchParams(window.location.search);
+
+            // If coming back to an active session
+            if (params.get('code')) {
+                currentCode = params.get('code');
+                goStep(3);
+                loadParticipants();
+                startPolling();
+                return;
+            }
+
+            // If editing an existing quiz
+            if (params.get('edit')) {
+                currentQuizId = parseInt(params.get('edit'));
+                questionCount = 0;
+                loadExistingQuestions(currentQuizId);
+                goStep(2);
+            }
+        })();
+
+        function setStep(n) {
+            [1, 2, 3].forEach(i => {
+                document.getElementById(`step${i}-item`).className =
+                    i < n ? 'step-item done' : i === n ? 'step-item active' : 'step-item';
+                document.getElementById(`panel-step${i}`).className =
+                    i === n ? 'host-panel active' : 'host-panel';
+            });
+        }
+
+        function goStep(n) { setStep(n); }
+
+        async function createQuiz(e) {
+            e.preventDefault();
+            const btn = document.getElementById('createQuizBtn');
+            btn.disabled = true; btn.textContent = 'Creating...';
+            const title = document.getElementById('quizTitle').value.trim();
+            const description = document.getElementById('quizDesc').value.trim();
+            try {
+                const res = await fetch('/api/session/create-quiz', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    currentQuizId = data.quizId;
+                    showToast('Quiz created! Now add questions.', 'success');
+                    goStep(2);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (e) { showToast('Error.', 'error'); }
+            btn.disabled = false; btn.textContent = 'Create Quiz →';
+        }
+
+        async function addQuestion(e) {
+            e.preventDefault();
+            if (!currentQuizId) { showToast('Create quiz first.', 'warning'); return; }
+            const btn = document.getElementById('addQBtn');
+            btn.disabled = true;
+            const payload = {
+                quizId: currentQuizId,
+                question: document.getElementById('qText').value.trim(),
+                optionA: document.getElementById('qA').value.trim(),
+                optionB: document.getElementById('qB').value.trim(),
+                optionC: document.getElementById('qC').value.trim(),
+                optionD: document.getElementById('qD').value.trim(),
+                correctOption: document.getElementById('qCorrect').value
+            };
+            try {
+                const res = await fetch('/api/session/add-question', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    questionCount++;
+                    appendQuestionItem(data.questionId, payload);
+                    e.target.reset();
+                    document.getElementById('hostBtn').disabled = false;
+                    showToast('Question added!', 'success');
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (e) { showToast('Error.', 'error'); }
+            btn.disabled = false;
+        }
+
+        function appendQuestionItem(id, q) {
+            const list = document.getElementById('questionList');
+            const item = document.createElement('div');
+            item.className = 'q-item';
+            item.id = `qi-${id}`;
+            item.innerHTML = `
+        <div>
+          <div class="q-item-text">${escHtml(q.question)}</div>
+          <div class="q-item-answer">A: ${escHtml(q.optionA)} &nbsp; B: ${escHtml(q.optionB)} &nbsp; C: ${escHtml(q.optionC)} &nbsp; D: ${escHtml(q.optionD)} &nbsp; ✓ <strong>${q.correctOption}</strong></div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="removeQuestion(${id})">✕</button>
+      `;
+            list.appendChild(item);
+        }
+
+        async function loadExistingQuestions(quizId) {
+            const res = await fetch(`/api/session/quiz/${quizId}/questions`);
+            const data = await res.json();
+            if (data.success) {
+                data.questions.forEach(q => {
+                    questionCount++;
+                    appendQuestionItem(q.id, { question: q.question, optionA: q.optionA, optionB: q.optionB, optionC: q.optionC, optionD: q.optionD, correctOption: q.correctOption });
+                });
+                if (questionCount > 0) document.getElementById('hostBtn').disabled = false;
+            }
+        }
+
+        async function removeQuestion(id) {
+            const res = await fetch(`/api/session/question/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById(`qi-${id}`)?.remove();
+                questionCount--;
+                if (questionCount === 0) document.getElementById('hostBtn').disabled = true;
+                showToast('Question removed.', 'info');
+            } else {
+                showToast(data.message, 'error');
+            }
+        }
+
+        async function hostSession() {
+            if (!currentQuizId) return;
+            const btn = document.getElementById('hostBtn');
+            btn.disabled = true; btn.textContent = 'Launching...';
+            try {
+                const res = await fetch('/api/session/host', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quizId: currentQuizId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    currentCode = data.joinCode;
+                    document.getElementById('liveCode').textContent = data.joinCode;
+                    history.replaceState(null, '', `/host?code=${data.joinCode}`);
+                    goStep(3);
+                    startPolling();
+                    showToast(`Session live! Code: ${data.joinCode}`, 'success');
+                } else {
+                    showToast(data.message, 'error');
+                    btn.disabled = false; btn.textContent = '🚀 Host This Quiz';
+                }
+            } catch (e) { showToast('Error.', 'error'); btn.disabled = false; btn.textContent = '🚀 Host This Quiz'; }
+        }
+
+        function startPolling() {
+            loadParticipants();
+            pollInterval = setInterval(loadParticipants, 5000);
+        }
+
+        async function loadParticipants() {
+            if (!currentCode) return;
+            try {
+                const res = await fetch(`/api/session/${currentCode}/participants`);
+                const data = await res.json();
+                if (!data.success) return;
+                document.getElementById('liveCode').textContent = currentCode;
+                document.getElementById('partCount').textContent = data.participants.length;
+                const list = document.getElementById('participantList');
+                if (data.participants.length === 0) {
+                    list.innerHTML = `<div class="empty-state" style="padding:24px;">Waiting for participants to join...</div>`;
+                    return;
+                }
+                list.innerHTML = data.participants.map(p => `
+          <div class="participant-row">
+            <div class="participant-avatar">${escHtml(p.name).charAt(0).toUpperCase()}</div>
+            <div class="participant-info">
+              <div class="name">${escHtml(p.name)}</div>
+              <div class="sub">${p.submitted_at
+                        ? `✅ Submitted — ${p.score}/${p.total_questions} (${parseFloat(p.percentage).toFixed(1)}%)`
+                        : '⏳ Taking quiz...'
+                    }</div>
+            </div>
+            ${p.submitted_at && p.certificate_id
+                        ? `<a href="/api/session/certificate/${p.certificate_id}" target="_blank" style="color:var(--primary); font-size:0.8rem;">📜 Cert</a>`
+                        : ''}
+          </div>
+        `).join('');
+            } catch (e) { }
+        }
+
+        async function endSession() {
+            if (!currentCode || !confirm(`End session ${currentCode}?`)) return;
+            clearInterval(pollInterval);
+            const res = await fetch(`/api/session/${currentCode}/end`, { method: 'POST' });
+            const data = await res.json();
+            showToast(data.message, data.success ? 'success' : 'error');
+            if (data.success) setTimeout(() => window.location.href = '/dashboard', 1500);
+        }
+
+        function copyCode() {
+            if (!currentCode) return;
+            navigator.clipboard.writeText(currentCode).then(() => showToast(`Copied: ${currentCode}`, 'success'));
+        }
+
+        function escHtml(s) {
+            return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+
+</html>

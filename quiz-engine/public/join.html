@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Join a Quiz — QuizEngine</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+        .join-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 20px 40px;
+        }
+
+        .join-card {
+            width: 100%;
+            max-width: 460px;
+            padding: 52px 44px;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .join-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            margin: 0 auto 28px;
+            box-shadow: 0 12px 40px rgba(255, 122, 89, 0.2);
+        }
+
+        .join-card h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .join-card p {
+            color: var(--text-secondary);
+            margin-bottom: 36px;
+            font-size: 0.95rem;
+        }
+
+        /* ---- CODE INPUT ---- */
+        .code-input-wrapper {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        #joinCode {
+            width: 100%;
+            padding: 20px 24px;
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            background: #FAFAF9;
+            border: 2px solid rgba(0, 0, 0, 0.08);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: monospace;
+            outline: none;
+            transition: all var(--transition);
+        }
+
+        #joinCode:focus {
+            border-color: var(--primary);
+            background: rgba(255, 122, 89, 0.04);
+            box-shadow: 0 0 0 4px rgba(255, 122, 89, 0.12);
+        }
+
+        #joinCode::placeholder {
+            letter-spacing: 6px;
+            font-size: 1.4rem;
+            color: var(--text-muted);
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* ---- SESSION PREVIEW ---- */
+        .session-preview {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            text-align: left;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .session-preview .quiz-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .session-preview .quiz-host {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <div class="navbar-logo">🎯</div>
+            <span class="navbar-title">QuizEngine</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="/dashboard" class="btn btn-secondary" style="padding:8px 20px">← Dashboard</a></li>
+        </ul>
+    </nav>
+
+    <div class="join-page">
+        <div class="glass-card join-card">
+            <div class="join-icon">🔗</div>
+            <h1>Join a Quiz</h1>
+            <p>Enter the 6-character join code shared by your quiz host.</p>
+
+            <form onsubmit="joinSession(event)">
+                <div class="code-input-wrapper">
+                    <input type="text" id="joinCode" maxlength="6" placeholder="XXXXXX" autocomplete="off"
+                        spellcheck="false" oninput="handleCodeInput(this)" required />
+                    <div class="char-counter"><span id="charCount">0</span> / 6</div>
+                </div>
+
+                <!-- Session preview (shown after code lookup) -->
+                <div class="session-preview" id="sessionPreview" style="display:none;">
+                    <div class="quiz-name" id="previewTitle"></div>
+                    <div class="quiz-host" id="previewHost"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="joinBtn"
+                    style="width:100%; font-size:1rem; padding:14px;">
+                    Join Session →
+                </button>
+            </form>
+
+            <div style="margin-top:24px; font-size:0.85rem; color:var(--text-muted);">
+                Don't have a code? <a href="/dashboard" style="color:var(--primary);">Create your own quiz</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/script.js"></script>
+    <script>
+        let previewDebounce = null;
+
+        // Auth check
+        (async () => {
+            const res = await fetch('/api/auth/session');
+            const data = await res.json();
+            if (!data.success) { window.location.href = '/login'; }
+        })();
+
+        function handleCodeInput(input) {
+            // Force uppercase + only alphanumeric
+            input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            document.getElementById('charCount').textContent = input.value.length;
+
+            clearTimeout(previewDebounce);
+            document.getElementById('sessionPreview').style.display = 'none';
+
+            if (input.value.length === 6) {
+                // Auto-preview the session
+                previewDebounce = setTimeout(() => previewSession(input.value), 300);
+            }
+        }
+
+        async function previewSession(code) {
+            try {
+                const res = await fetch(`/api/session/${code}`);
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('previewTitle').textContent = `📋 ${data.session.quizTitle}`;
+                    document.getElementById('previewHost').textContent = `Hosted by ${data.session.hostName}`;
+                    document.getElementById('sessionPreview').style.display = 'block';
+                }
+            } catch (e) { }
+        }
+
+        async function joinSession(e) {
+            e.preventDefault();
+            const code = document.getElementById('joinCode').value.trim().toUpperCase();
+            if (code.length !== 6) {
+                showToast('Enter a valid 6-character code.', 'warning');
+                return;
+            }
+            const btn = document.getElementById('joinBtn');
+            btn.disabled = true; btn.textContent = 'Joining...';
+            try {
+                const res = await fetch('/api/session/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ joinCode: code })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Joined! Loading quiz...`, 'success');
+                    setTimeout(() => window.location.href = `/session-quiz?code=${code}`, 800);
+                } else {
+                    showToast(data.message || 'Could not join session.', 'error');
+                    btn.disabled = false; btn.textContent = 'Join Session →';
+                }
+            } catch (err) {
+                showToast('Network error.', 'error');
+                btn.disabled = false; btn.textContent = 'Join Session →';
+            }
+        }
+    </script>
+</body>
+
+</html>

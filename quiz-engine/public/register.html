@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register — QuizEngine</title>
+    <meta name="description" content="Create a free QuizEngine account and start earning certificates today." />
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 20px 40px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 460px;
+            padding: 48px 44px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .auth-logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 30px rgba(255, 122, 89, 0.25);
+        }
+
+        .auth-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .auth-header p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+
+        .auth-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .input-icon-wrapper {
+            position: relative;
+        }
+
+        .input-icon-wrapper input {
+            padding-left: 44px;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1rem;
+            pointer-events: none;
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .strength-bar {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.4s ease, background 0.4s ease;
+        }
+
+        .strength-label {
+            font-size: 0.75rem;
+            margin-top: 4px;
+        }
+
+        .perks {
+            background: rgba(16, 185, 129, 0.06);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            font-size: 0.83rem;
+            color: #059669;
+        }
+
+        .perks div {
+            margin-bottom: 4px;
+        }
+
+        .perks div:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <div class="navbar-logo">🎯</div>
+            <span class="navbar-title">QuizEngine</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="/login" class="btn btn-secondary" style="padding:8px 20px">Sign In</a></li>
+        </ul>
+    </nav>
+
+    <div class="auth-page">
+        <div class="glass-card auth-card">
+
+            <div class="auth-header">
+                <div class="auth-logo">🚀</div>
+                <h1>Create Account</h1>
+                <p>Join QuizEngine and start earning certificates</p>
+            </div>
+
+            <!-- Perks -->
+            <div class="perks">
+                ✅ Free forever &nbsp;&nbsp; 🎯 Instant quizzes &nbsp;&nbsp; 📜 PDF certificates
+            </div>
+
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <div class="input-icon-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="name" placeholder="Your full name" required autocomplete="name" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-icon-wrapper">
+                        <span class="input-icon">✉</span>
+                        <input type="email" id="email" placeholder="you@example.com" required autocomplete="email" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-icon-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="password" placeholder="Min 6 characters" required
+                            autocomplete="new-password" oninput="checkStrength(this.value)" />
+                    </div>
+                    <div class="password-strength">
+                        <div class="strength-bar" id="strengthBar" style="width:0%"></div>
+                    </div>
+                    <div class="strength-label" id="strengthLabel" style="color:var(--text-muted)"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <div class="input-icon-wrapper">
+                        <span class="input-icon">🔐</span>
+                        <input type="password" id="confirmPassword" placeholder="Repeat your password" required
+                            autocomplete="new-password" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="registerBtn" style="width:100%; margin-top:8px;">
+                    Create Account &nbsp;→
+                </button>
+            </form>
+
+            <div style="text-align:center; margin-top:24px; font-size:0.88rem; color:var(--text-secondary);">
+                Already have an account? <a href="/login" style="color:var(--primary); font-weight:500;">Sign in</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/js/script.js"></script>
+    <script>
+        function checkStrength(password) {
+            const bar = document.getElementById('strengthBar');
+            const label = document.getElementById('strengthLabel');
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+            const levels = [
+                { w: '0%', c: 'transparent', t: '' },
+                { w: '20%', c: '#ef4444', t: 'Very Weak' },
+                { w: '40%', c: '#f97316', t: 'Weak' },
+                { w: '60%', c: '#eab308', t: 'Fair' },
+                { w: '80%', c: '#22c55e', t: 'Strong' },
+                { w: '100%', c: '#10b981', t: 'Very Strong' },
+            ];
+            const lv = levels[Math.min(strength, 5)];
+            bar.style.width = lv.w;
+            bar.style.background = lv.c;
+            label.textContent = lv.t;
+            label.style.color = lv.c;
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const btn = document.getElementById('registerBtn');
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast('Account created! Redirecting to login...', 'success');
+                    setTimeout(() => window.location.href = '/login', 1500);
+                } else {
+                    showToast(data.message || 'Registration failed.', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Create Account →';
+                }
+            } catch (err) {
+                showToast('Network error. Please try again.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Create Account →';
+            }
+        }
+    </script>
+</body>
+
+</html>
